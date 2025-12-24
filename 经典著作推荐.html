@@ -1,0 +1,773 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>经典著作推荐 | 古今中外文学宝库</title>
+    <!-- 引入外部资源 -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind 配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#2D3748',
+                        secondary: '#4A5568',
+                        accent: '#3182CE',
+                        light: '#F7FAFC',
+                        dark: '#1A202C'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                        serif: ['Merriweather', 'Georgia', 'serif']
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <!-- 自定义样式 -->
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .book-card {
+                @apply bg-white rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1;
+            }
+            .search-input {
+                @apply w-full px-4 py-3 rounded-lg border border-gray-300 focus:outline-none focus:ring-2 focus:ring-accent/50 focus:border-accent transition-all;
+            }
+            .btn-primary {
+                @apply bg-accent text-white px-6 py-3 rounded-lg hover:bg-accent/90 transition-all transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-accent/50;
+            }
+            .category-tag {
+                @apply px-3 py-1 rounded-full text-sm font-medium transition-all hover:scale-105 cursor-pointer;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen flex flex-col">
+    <!-- 导航栏 -->
+    <header class="bg-primary text-white shadow-md sticky top-0 z-50">
+        <div class="container mx-auto px-4 py-4 flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center mb-4 md:mb-0">
+                <i class="fa fa-book text-3xl mr-3 text-accent"></i>
+                <h1 class="text-2xl font-bold">经典著作推荐</h1>
+            </div>
+            <nav class="flex space-x-6">
+                <a href="#" class="hover:text-accent transition-colors"><i class="fa fa-home mr-1"></i> 首页</a>
+                <a href="#" class="hover:text-accent transition-colors"><i class="fa fa-list mr-1"></i> 分类</a>
+                <a href="#" class="hover:text-accent transition-colors"><i class="fa fa-info-circle mr-1"></i> 关于</a>
+            </nav>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="flex-grow container mx-auto px-4 py-8">
+        <!-- 搜索区域 -->
+        <section class="mb-12 bg-white rounded-xl shadow-lg p-6 md:p-8 transform transition-all duration-500 hover:shadow-xl">
+            <h2 class="text-2xl font-bold mb-6 text-primary">寻找你的经典著作</h2>
+            
+            <div class="flex flex-col md:flex-row gap-4 mb-6">
+                <div class="relative flex-grow">
+                    <input 
+                        type="text" 
+                        id="search-input"
+                        placeholder="输入关键词，如：爱情、哲学、历史..."
+                        class="search-input pl-10 pr-4 py-3"
+                    >
+                    <i class="fa fa-search absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
+                    <div id="suggestions" class="absolute left-0 right-0 mt-1 bg-white rounded-lg shadow-lg z-10 max-h-60 overflow-y-auto hidden"></div>
+                </div>
+                <button id="search-btn" class="btn-primary whitespace-nowrap">
+                    <i class="fa fa-search mr-2"></i>搜索
+                </button>
+            </div>
+            
+            <!-- 分类标签 -->
+            <div class="flex flex-wrap gap-2 mb-4">
+                <span class="text-gray-600 font-medium mr-2">热门分类：</span>
+                <span class="category-tag bg-blue-100 text-blue-800" data-category="文学">文学</span>
+                <span class="category-tag bg-green-100 text-green-800" data-category="哲学">哲学</span>
+                <span class="category-tag bg-purple-100 text-purple-800" data-category="历史">历史</span>
+                <span class="category-tag bg-yellow-100 text-yellow-800" data-category="科幻">科幻</span>
+                <span class="category-tag bg-red-100 text-red-800" data-category="爱情">爱情</span>
+                <span class="category-tag bg-indigo-100 text-indigo-800" data-category="心理学">心理学</span>
+                <span class="category-tag bg-pink-100 text-pink-800" data-category="诗歌">诗歌</span>
+                <span class="category-tag bg-orange-100 text-orange-800" data-category="经济学">经济学</span>
+                <span class="category-tag bg-teal-100 text-teal-800" data-category="童话">童话</span>
+            </div>
+            
+            <!-- 筛选选项 -->
+            <div class="flex flex-wrap gap-4 text-sm text-gray-600">
+                <div class="flex items-center">
+                    <input type="checkbox" id="ancient" class="mr-2 accent-accent">
+                    <label for="ancient">中国古典</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="modern-cn" class="mr-2 accent-accent">
+                    <label for="modern-cn">中国现代</label>
+                </div>
+                <div class="flex items-center">
+                    <input type="checkbox" id="foreign" class="mr-2 accent-accent">
+                    <label for="foreign">外国经典</label>
+                </div>
+                <div class="flex items-center ml-auto">
+                    <label for="sort" class="mr-2">排序：</label>
+                    <select id="sort" class="rounded border-gray-300 focus:ring-accent focus:border-accent">
+                        <option value="relevance">相关度</option>
+                        <option value="time">成书年代</option>
+                        <option value="rating">评分</option>
+                    </select>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 推荐结果区域 -->
+        <section id="results-section" class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-primary flex items-center">
+                <i class="fa fa-bookmark-o mr-2 text-accent"></i>
+                <span id="results-title">推荐著作</span>
+                <span id="result-count" class="ml-3 text-sm text-gray-500 font-normal"></span>
+            </h2>
+            
+            <!-- 加载状态 -->
+            <div id="loading" class="flex justify-center items-center py-12 hidden">
+                <div class="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-accent"></div>
+                <span class="ml-4 text-gray-600">正在为您搜索...</span>
+            </div>
+            
+            <!-- 无结果状态 -->
+            <div id="no-results" class="text-center py-12 hidden">
+                <i class="fa fa-search-minus text-5xl text-gray-300 mb-4"></i>
+                <p class="text-xl text-gray-500">未找到相关著作</p>
+                <p class="text-gray-400 mt-2">尝试使用其他关键词或分类</p>
+            </div>
+            
+            <!-- 结果列表 -->
+            <div id="results-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 示例卡片 - 页面加载时会被替换 -->
+                <div class="book-card">
+                    <div class="h-48 bg-gray-200 flex items-center justify-center">
+                        <i class="fa fa-book text-6xl text-gray-400"></i>
+                    </div>
+                    <div class="p-5">
+                        <h3 class="text-xl font-bold mb-2">等待搜索...</h3>
+                        <p class="text-gray-600 mb-3">输入关键词开始探索经典著作</p>
+                        <div class="flex justify-between items-center">
+                            <span class="text-sm text-gray-500">点击搜索按钮</span>
+                            <span class="text-accent font-medium">开始 ></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+        
+        <!-- 热门推荐 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold mb-6 text-primary flex items-center">
+                <i class="fa fa-fire mr-2 text-accent"></i>
+                热门推荐
+            </h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                <!-- 热门书籍卡片会动态生成 -->
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-primary text-white py-8">
+        <div class="container mx-auto px-4">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-6 md:mb-0">
+                    <div class="flex items-center mb-3">
+                        <i class="fa fa-book text-2xl mr-2 text-accent"></i>
+                        <h3 class="text-xl font-bold">经典著作推荐</h3>
+                    </div>
+                    <p class="text-gray-300">探索古今中外的文学瑰宝</p>
+                </div>
+                
+                <div class="flex space-x-6">
+                    <a href="#" class="hover:text-accent transition-colors"><i class="fa fa-github text-xl"></i></a>
+                    <a href="#" class="hover:text-accent transition-colors"><i class="fa fa-twitter text-xl"></i></a>
+                    <a href="#" class="hover:text-accent transition-colors"><i class="fa fa-weixin text-xl"></i></a>
+                </div>
+            </div>
+            
+            <hr class="border-gray-700 my-6">
+            
+            <div class="text-center text-gray-400 text-sm">
+                <p>© 2025 经典著作推荐 | 所有著作信息仅供参考</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script>
+        // 扩充后的著作数据库（30本）
+        const booksDatabase = [
+            // ============= 中国古典（8本） =============
+            {
+                title: "红楼梦",
+                author: "曹雪芹",
+                category: ["文学", "爱情", "家族"],
+                era: "清代",
+                region: "中国古典",
+                description: "中国古典四大名著之首，通过贾宝玉、林黛玉、薛宝钗的爱情婚姻悲剧，展现了一个封建大家族的兴衰。",
+                rating: 9.8,
+                tags: ["古典小说", "悲剧", "人情世故"]
+            },
+            {
+                title: "论语",
+                author: "孔子及其弟子",
+                category: ["哲学", "伦理", "教育"],
+                era: "春秋",
+                region: "中国古典",
+                description: "记录孔子及其弟子言行的语录体散文集，集中体现了孔子的政治主张、伦理思想、道德观念及教育原则。",
+                rating: 9.7,
+                tags: ["儒家", "经典", "人生智慧"]
+            },
+            {
+                title: "史记",
+                author: "司马迁",
+                category: ["历史", "传记"],
+                era: "西汉",
+                region: "中国古典",
+                description: "中国第一部纪传体通史，记载了从上古黄帝时代到汉武帝太初年间共3000多年的历史。",
+                rating: 9.6,
+                tags: ["史学", "纪传体", "通史"]
+            },
+            {
+                title: "道德经",
+                author: "老子",
+                category: ["哲学", "道家"],
+                era: "春秋",
+                region: "中国古典",
+                description: "道家思想的核心著作，以极简的文字阐述了宇宙、自然、人生的根本规律，是中国哲学的经典之作。",
+                rating: 9.7,
+                tags: ["道家", "哲学", "处世智慧"]
+            },
+            {
+                title: "三国演义",
+                author: "罗贯中",
+                category: ["文学", "历史", "战争"],
+                era: "明代",
+                region: "中国古典",
+                description: "中国古典四大名著之一，描写了从东汉末年到西晋初年近百年的历史风云，展现了三国时代的政治军事斗争。",
+                rating: 9.6,
+                tags: ["战争", "谋略", "历史演义"]
+            },
+            {
+                title: "水浒传",
+                author: "施耐庵",
+                category: ["文学", "侠义", "社会"],
+                era: "明代",
+                region: "中国古典",
+                description: "中国古典四大名著之一，讲述了以宋江为首的108位好汉在梁山起义，以及接受招安后为朝廷征战的故事。",
+                rating: 9.5,
+                tags: ["侠义", "反抗", "民间故事"]
+            },
+            {
+                title: "西游记",
+                author: "吴承恩",
+                category: ["文学", "神话", "冒险"],
+                era: "明代",
+                region: "中国古典",
+                description: "中国古典四大名著之一，讲述了唐僧师徒四人西天取经的奇幻冒险故事，充满浪漫主义色彩。",
+                rating: 9.6,
+                tags: ["神话", "冒险", "神魔小说"]
+            },
+            {
+                title: "唐诗三百首",
+                author: "蘅塘退士（编选）",
+                category: ["文学", "诗歌"],
+                era: "清代",
+                region: "中国古典",
+                description: "流传最广的唐诗选集，收录了从初唐到晚唐的经典诗作，涵盖了李白、杜甫、白居易等名家的代表作。",
+                rating: 9.5,
+                tags: ["唐诗", "诗歌", "古典文学"]
+            },
+
+            // ============= 中国现代（8本） =============
+            {
+                title: "呐喊",
+                author: "鲁迅",
+                category: ["文学", "社会"],
+                era: "民国",
+                region: "中国现代",
+                description: "鲁迅的短篇小说集，收录了《狂人日记》《阿Q正传》等经典作品，深刻揭示了社会的病态和人性的弱点。",
+                rating: 9.5,
+                tags: ["批判", "社会现实", "短篇小说"]
+            },
+            {
+                title: "围城",
+                author: "钱钟书",
+                category: ["文学", "爱情", "讽刺"],
+                era: "民国",
+                region: "中国现代",
+                description: "以幽默辛辣的笔触描绘了知识分子的生活百态，揭示了人生的困境和人性的复杂。",
+                rating: 9.4,
+                tags: ["知识分子", "婚姻", "讽刺小说"]
+            },
+            {
+                title: "三体",
+                author: "刘慈欣",
+                category: ["科幻", "文学", "宇宙"],
+                era: "21世纪",
+                region: "中国现代",
+                description: "中国科幻文学的里程碑之作，讲述了地球人类文明和三体文明的信息交流、生死搏杀及两个文明在宇宙中的兴衰历程。",
+                rating: 9.7,
+                tags: ["科幻", "宇宙", "文明"]
+            },
+            {
+                title: "骆驼祥子",
+                author: "老舍",
+                category: ["文学", "社会", "悲剧"],
+                era: "民国",
+                region: "中国现代",
+                description: "讲述了北平城里一个年轻好强、充满生命活力的人力车夫祥子三起三落的人生经历，反映了旧中国底层人民的悲惨命运。",
+                rating: 9.4,
+                tags: ["底层社会", "悲剧", "现实主义"]
+            },
+            {
+                title: "平凡的世界",
+                author: "路遥",
+                category: ["文学", "成长", "时代"],
+                era: "20世纪",
+                region: "中国现代",
+                description: "全景式地展现了中国70年代中期到80年代中期城乡社会生活的巨大历史性变迁，讲述了普通人在大时代历史进程中所走过的艰难曲折的道路。",
+                rating: 9.6,
+                tags: ["成长", "时代", "现实主义"]
+            },
+            {
+                title: "活着",
+                author: "余华",
+                category: ["文学", "人生", "悲剧"],
+                era: "20世纪",
+                region: "中国现代",
+                description: "讲述了福贵一生的坎坷经历，从富家少爷到贫苦农民，在苦难中顽强活着的故事，展现了生命的韧性。",
+                rating: 9.6,
+                tags: ["人生", "苦难", "生命"]
+            },
+            {
+                title: "边城",
+                author: "沈从文",
+                category: ["文学", "爱情", "乡土"],
+                era: "民国",
+                region: "中国现代",
+                description: "以20世纪30年代川湘交界的边城小镇茶峒为背景，描绘了湘西地区特有的风土人情，讲述了翠翠的纯美爱情故事。",
+                rating: 9.3,
+                tags: ["乡土", "纯美", "湘西"]
+            },
+            {
+                title: "射雕英雄传",
+                author: "金庸",
+                category: ["文学", "武侠", "历史"],
+                era: "20世纪",
+                region: "中国现代",
+                description: "金庸经典武侠小说，以南宋为背景，讲述了郭靖从一个笨小子成长为一代大侠的故事，融合了历史、武侠、爱情等元素。",
+                rating: 9.4,
+                tags: ["武侠", "江湖", "家国"]
+            },
+
+            // ============= 外国经典（14本） =============
+            {
+                title: "百年孤独",
+                author: "加西亚·马尔克斯",
+                category: ["文学", "魔幻", "家族"],
+                era: "20世纪",
+                region: "外国经典",
+                description: "魔幻现实主义的代表作，讲述了布恩迪亚家族七代人的传奇故事，反映了拉丁美洲一个世纪以来风云变幻的历史。",
+                rating: 9.7,
+                tags: ["魔幻现实主义", "家族史诗", "拉丁美洲"]
+            },
+            {
+                title: "哈姆雷特",
+                author: "莎士比亚",
+                category: ["文学", "戏剧", "悲剧"],
+                era: "文艺复兴",
+                region: "外国经典",
+                description: "莎士比亚最著名的悲剧作品，讲述了丹麦王子哈姆雷特为父报仇的故事，探讨了生死、爱恨、理智与疯狂等深刻主题。",
+                rating: 9.6,
+                tags: ["悲剧", "人性", "复仇"]
+            },
+            {
+                title: "理想国",
+                author: "柏拉图",
+                category: ["哲学", "政治"],
+                era: "古希腊",
+                region: "外国经典",
+                description: "柏拉图的代表作，通过苏格拉底与他人的对话，探讨了正义、国家、教育等问题，构建了一个理想的城邦体系。",
+                rating: 9.5,
+                tags: ["政治哲学", "乌托邦", "古希腊"]
+            },
+            {
+                title: "时间简史",
+                author: "霍金",
+                category: ["科学", "宇宙", "物理"],
+                era: "20世纪",
+                region: "外国经典",
+                description: "霍金的科普经典，用通俗易懂的语言解释了宇宙的起源、黑洞、时间旅行等前沿物理概念。",
+                rating: 9.4,
+                tags: ["科普", "宇宙学", "物理学"]
+            },
+            {
+                title: "解忧杂货店",
+                author: "东野圭吾",
+                category: ["文学", "温情", "推理"],
+                era: "21世纪",
+                region: "外国经典",
+                description: "跨越时空的温暖故事，讲述了一家神奇的杂货店，人们将烦恼写成信投进店前门的投信口，第二天就会在店后的牛奶箱里得到回答。",
+                rating: 9.2,
+                tags: ["温情", "治愈", "推理"]
+            },
+            {
+                title: "沉思录",
+                author: "马可·奥勒留",
+                category: ["哲学", "人生", "随笔"],
+                era: "古罗马",
+                region: "外国经典",
+                description: "古罗马皇帝马可·奥勒留的哲学思考录，记录了他对人生、宇宙、道德的思考，是斯多葛学派的经典著作。",
+                rating: 9.3,
+                tags: ["斯多葛派", "人生智慧", "哲学随笔"]
+            },
+            {
+                title: "战争与和平",
+                author: "列夫·托尔斯泰",
+                category: ["文学", "历史", "战争"],
+                era: "19世纪",
+                region: "外国经典",
+                description: "俄国文学的巅峰之作，以1812年拿破仑入侵俄国为背景，描绘了俄国社会的广阔画面，探讨了战争与和平、历史与个人的关系。",
+                rating: 9.6,
+                tags: ["史诗", "历史", "人性"]
+            },
+            {
+                title: "经济学原理",
+                author: "曼昆",
+                category: ["经济学", "社科"],
+                era: "20世纪",
+                region: "外国经典",
+                description: "全球最受欢迎的经济学入门教材，以通俗易懂的方式讲解了经济学的基本原理，涵盖微观经济学和宏观经济学两大领域。",
+                rating: 9.4,
+                tags: ["经济学", "入门", "社科"]
+            },
+            {
+                title: "小王子",
+                author: "圣埃克苏佩里",
+                category: ["文学", "童话", "哲理"],
+                era: "20世纪",
+                region: "外国经典",
+                description: "一部写给所有人看的童话，通过小王子的星际旅行，探讨了爱、孤独、成长等永恒的人生主题。",
+                rating: 9.7,
+                tags: ["童话", "哲理", "成长"]
+            },
+            {
+                title: "追风筝的人",
+                author: "卡勒德·胡赛尼",
+                category: ["文学", "成长", "救赎"],
+                era: "21世纪",
+                region: "外国经典",
+                description: "以阿富汗为背景，讲述了一个关于背叛与救赎的故事，展现了人性的复杂和生命的韧性。",
+                rating: 9.3,
+                tags: ["救赎", "友情", "战争"]
+            },
+            {
+                title: "梦的解析",
+                author: "弗洛伊德",
+                category: ["心理学", "哲学"],
+                era: "19世纪",
+                region: "外国经典",
+                description: "精神分析学的经典著作，弗洛伊德通过对梦的研究，揭示了潜意识的奥秘，开创了精神分析的新领域。",
+                rating: 9.2,
+                tags: ["心理学", "潜意识", "精神分析"]
+            },
+            {
+                title: "君主论",
+                author: "马基雅维利",
+                category: ["政治学", "哲学"],
+                era: "文艺复兴",
+                region: "外国经典",
+                description: "西方政治学的经典之作，探讨了君主如何获得权力、维护权力的策略，是现实主义政治思想的代表作。",
+                rating: 9.1,
+                tags: ["政治学", "权力", "现实主义"]
+            },
+            {
+                title: "人类简史",
+                author: "尤瓦尔·赫拉利",
+                category: ["历史", "人类学", "社科"],
+                era: "21世纪",
+                region: "外国经典",
+                description: "从认知革命、农业革命到科学革命，讲述了人类如何从一种普通的灵长类动物演变为地球的主宰，探讨了人类文明的发展历程。",
+                rating: 9.4,
+                tags: ["人类史", "社科", "认知"]
+            },
+            {
+                title: "白夜行",
+                author: "东野圭吾",
+                category: ["文学", "推理", "爱情"],
+                era: "21世纪",
+                region: "外国经典",
+                description: "东野圭吾的巅峰之作，讲述了一对少年因命运交织而走上不同人生道路的故事，融合了推理、爱情与社会批判。",
+                rating: 9.2,
+                tags: ["推理", "爱情", "社会"]
+            }
+        ];
+
+        // 关键词建议（同步扩充）
+        const suggestions = [
+            "爱情", "哲学", "历史", "科幻", "心理学", "诗歌", 
+            "人生", "成长", "战争", "和平", "冒险", "推理",
+            "中国古典", "外国经典", "魔幻现实主义", "人性",
+            "经济学", "童话", "武侠", "救赎", "科幻", "悲剧"
+        ];
+
+        // DOM 元素
+        const searchInput = document.getElementById('search-input');
+        const suggestionsEl = document.getElementById('suggestions');
+        const searchBtn = document.getElementById('search-btn');
+        const resultsContainer = document.getElementById('results-container');
+        const resultCount = document.getElementById('result-count');
+        const loading = document.getElementById('loading');
+        const noResults = document.getElementById('no-results');
+        const categoryTags = document.querySelectorAll('.category-tag');
+        
+        // 搜索输入框建议
+        searchInput.addEventListener('input', function() {
+            const value = this.value.trim().toLowerCase();
+            suggestionsEl.innerHTML = '';
+            
+            if (value.length > 0) {
+                const filteredSuggestions = suggestions.filter(suggestion => 
+                    suggestion.toLowerCase().includes(value)
+                );
+                
+                if (filteredSuggestions.length > 0) {
+                    filteredSuggestions.forEach(suggestion => {
+                        const div = document.createElement('div');
+                        div.className = 'px-4 py-2 hover:bg-gray-100 cursor-pointer';
+                        div.textContent = suggestion;
+                        div.addEventListener('click', function() {
+                            searchInput.value = suggestion;
+                            suggestionsEl.classList.add('hidden');
+                            performSearch();
+                        });
+                        suggestionsEl.appendChild(div);
+                    });
+                    suggestionsEl.classList.remove('hidden');
+                } else {
+                    suggestionsEl.classList.add('hidden');
+                }
+            } else {
+                suggestionsEl.classList.add('hidden');
+            }
+        });
+
+        // 点击页面其他区域关闭建议框
+        document.addEventListener('click', function(e) {
+            if (!searchInput.contains(e.target) && !suggestionsEl.contains(e.target)) {
+                suggestionsEl.classList.add('hidden');
+            }
+        });
+
+        // 分类标签点击事件（新增经济学、童话标签）
+        categoryTags.forEach(tag => {
+            tag.addEventListener('click', function() {
+                searchInput.value = this.dataset.category;
+                performSearch();
+            });
+        });
+
+        // 搜索按钮点击事件
+        searchBtn.addEventListener('click', performSearch);
+        
+        // 回车键搜索
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // 执行搜索
+        function performSearch() {
+            const keyword = searchInput.value.trim().toLowerCase();
+            if (!keyword) {
+                alert('请输入搜索关键词');
+                return;
+            }
+            
+            // 显示加载状态
+            resultsContainer.classList.add('hidden');
+            noResults.classList.add('hidden');
+            loading.classList.remove('hidden');
+            
+            // 模拟加载延迟
+            setTimeout(() => {
+                // 获取筛选条件
+                const filters = {
+                    ancient: document.getElementById('ancient').checked,
+                    modernCn: document.getElementById('modern-cn').checked,
+                    foreign: document.getElementById('foreign').checked,
+                    sort: document.getElementById('sort').value
+                };
+                
+                // 筛选书籍
+                let filteredBooks = filterBooks(keyword, filters);
+                
+                // 排序
+                filteredBooks = sortBooks(filteredBooks, filters.sort);
+                
+                // 更新结果
+                updateResults(filteredBooks, keyword);
+                
+                // 隐藏加载状态
+                loading.classList.add('hidden');
+                
+                // 显示结果或无结果
+                if (filteredBooks.length > 0) {
+                    resultsContainer.classList.remove('hidden');
+                } else {
+                    noResults.classList.remove('hidden');
+                }
+            }, 800);
+        }
+
+        // 筛选书籍
+        function filterBooks(keyword, filters) {
+            // 先筛选关键词
+            let filtered = booksDatabase.filter(book => {
+                const matchesKeyword = 
+                    book.title.toLowerCase().includes(keyword) ||
+                    book.author.toLowerCase().includes(keyword) ||
+                    book.category.some(cat => cat.toLowerCase().includes(keyword)) ||
+                    book.tags.some(tag => tag.toLowerCase().includes(keyword)) ||
+                    book.description.toLowerCase().includes(keyword);
+                
+                // 应用地区筛选
+                let regionMatch = true;
+                const filterCount = [filters.ancient, filters.modernCn, filters.foreign].filter(Boolean).length;
+                
+                if (filterCount > 0) {
+                    regionMatch = false;
+                    if (filters.ancient && book.region === "中国古典") regionMatch = true;
+                    if (filters.modernCn && book.region === "中国现代") regionMatch = true;
+                    if (filters.foreign && book.region === "外国经典") regionMatch = true;
+                }
+                
+                return matchesKeyword && regionMatch;
+            });
+            
+            return filtered;
+        }
+
+        // 排序书籍
+        function sortBooks(books, sortBy) {
+            switch(sortBy) {
+                case 'time':
+                    return [...books].sort((a, b) => {
+                        const eraOrder = {
+                            "春秋": 1, "西汉": 2, "唐代": 3, "宋代": 4, "元代": 5,
+                            "明代": 6, "清代": 7, "民国": 8, "文艺复兴": 9,
+                            "19世纪": 10, "20世纪": 11, "21世纪": 12
+                        };
+                        return (eraOrder[a.era] || 99) - (eraOrder[b.era] || 99);
+                    });
+                case 'rating':
+                    return [...books].sort((a, b) => b.rating - a.rating);
+                case 'relevance':
+                default:
+                    return books;
+            }
+        }
+
+        // 更新搜索结果
+        function updateResults(books, keyword) {
+            resultsContainer.innerHTML = '';
+            resultCount.textContent = `(${books.length} 本)`;
+            
+            if (books.length === 0) return;
+            
+            books.forEach(book => {
+                // 创建书籍卡片
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                
+                // 随机书籍封面背景色
+                const colors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-yellow-100', 'bg-red-100', 'bg-indigo-100'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                card.innerHTML = `
+                    <div class="h-48 ${randomColor} flex items-center justify-center">
+                        <i class="fa fa-book text-6xl text-gray-500 opacity-70"></i>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold">${book.title}</h3>
+                            <span class="bg-accent/10 text-accent px-2 py-1 rounded text-sm font-medium">${book.rating}</span>
+                        </div>
+                        <p class="text-gray-600 mb-3">${book.author} / ${book.era} / ${book.region}</p>
+                        <p class="text-gray-700 mb-4 line-clamp-2">${book.description}</p>
+                        <div class="flex flex-wrap gap-2 mb-4">
+                            ${book.category.map(cat => 
+                                `<span class="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs">${cat}</span>`
+                            ).join('')}
+                        </div>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">${book.tags[0]}</span>
+                            <button class="text-accent hover:text-accent/80 font-medium flex items-center">
+                                了解更多 <i class="fa fa-arrow-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                resultsContainer.appendChild(card);
+            });
+        }
+
+        // 页面加载时显示热门推荐
+        window.addEventListener('DOMContentLoaded', function() {
+            // 显示热门书籍（评分最高的6本）
+            const popularBooks = [...booksDatabase]
+                .sort((a, b) => b.rating - a.rating)
+                .slice(0, 6);
+            
+            const popularContainer = document.querySelector('section:nth-child(3) .grid');
+            popularContainer.innerHTML = '';
+            
+            popularBooks.forEach(book => {
+                const colors = ['bg-blue-100', 'bg-green-100', 'bg-purple-100', 'bg-yellow-100', 'bg-red-100', 'bg-indigo-100'];
+                const randomColor = colors[Math.floor(Math.random() * colors.length)];
+                
+                const card = document.createElement('div');
+                card.className = 'book-card';
+                card.innerHTML = `
+                    <div class="h-48 ${randomColor} flex items-center justify-center">
+                        <i class="fa fa-book text-6xl text-gray-500 opacity-70"></i>
+                    </div>
+                    <div class="p-5">
+                        <div class="flex justify-between items-start mb-2">
+                            <h3 class="text-xl font-bold">${book.title}</h3>
+                            <span class="bg-accent/10 text-accent px-2 py-1 rounded text-sm font-medium">${book.rating}</span>
+                        </div>
+                        <p class="text-gray-600 mb-3">${book.author} / ${book.era}</p>
+                        <p class="text-gray-700 mb-4 line-clamp-2">${book.description}</p>
+                        <div class="flex justify-between items-center text-sm">
+                            <span class="text-gray-500">热门推荐</span>
+                            <button class="text-accent hover:text-accent/80 font-medium" onclick="document.getElementById('search-input').value='${book.title}'; performSearch()">
+                                查看 <i class="fa fa-angle-right ml-1"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                popularContainer.appendChild(card);
+            });
+        });
+    </script>
+</body>
+</html>
